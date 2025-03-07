@@ -1,139 +1,123 @@
-// online offline event
-addEventListener("offline", () => {
-    alert('you are offline');
-});
-addEventListener("online", () => {
-    alert('you are online');
-});
+// DOM Element References
+const todoinput = document.getElementById("task-input"); // Input field
+const addbtn = document.getElementById("addbtn"); // Add/Edit button
+const tasklist = document.getElementById("todobox"); // Todo list container
+let editTodo = null; // Stores reference to todo being edited
 
-let todoinput = document.getElementById("task-input")
-let addbtn = document.getElementById("addbtn")
-let tasklist = document.getElementById("todobox");
-
-let editTodo = null;
-let 
-
+// Main Todo Creation/Edit Function
 const addtodo = () => {
     const inputText = todoinput.value.trim();
+    
+    // Input Validation
     if (inputText.length <= 0) {
-        alert("you must write something in your to do")
-        return false
+        alert("Please enter a valid todo item");
+        return false;
     }
+
+    // Edit Existing Todo
     if (addbtn.value === "Edit") {
-        editlocaltodos(editTodo.target.previousElementSibling.innerHTML)
+        // Update localStorage and DOM with edited text
+        editlocaltodos(editTodo.target.previousElementSibling.innerHTML);
         editTodo.target.previousElementSibling.innerHTML = inputText;
         addbtn.value = "Add";
         todoinput.value = "";
-    }
+    } 
+    // Create New Todo
     else {
-        // Creating a li and p tag for HTML
-        const li = document.createElement("li")
-        const p = document.createElement("p")
+        // Create List Item Structure
+        const li = document.createElement("li");
+        const p = document.createElement("p");
+        p.innerHTML = inputText;
 
-        p.innerHTML = inputText
-        li.appendChild(p)
-        tasklist.appendChild(li)
-        todoinput.value = ""
+        // Create Action Buttons
+        const editbtn = document.createElement("button");
+        editbtn.innerHTML = "Edit";
+        editbtn.classList.add("btn", "deletebtn");
 
-        // create a edit btn
-        const editbtn = document.createElement("button")
-        editbtn.innerHTML = "Edit"
-        editbtn.classList.add("btn", "deletebtn")
+        const deletebtn = document.createElement("button");
+        deletebtn.innerHTML = "Remove";
+        deletebtn.classList.add("btn", "editbtn");
+
+        // Assemble Todo Item
+        li.appendChild(p);
         li.appendChild(editbtn);
-
-        // create Delete btn 
-        const deletebtn = document.createElement("button")
-        deletebtn.innerHTML = "Remove"
-        deletebtn.classList.add("btn", "editbtn")
         li.appendChild(deletebtn);
-        tasklist.appendChild(li)
-        todoinput.value = ""
+        tasklist.appendChild(li);
 
-        savatodo(inputText)
+        // Clear Input & Save
+        todoinput.value = "";
+        savalocaltodo(inputText);
     }
 }
 
+// Todo Update Handler (Edit/Delete)
 const updatetodo = (e) => {
-    // Edit a edit button
+    // Edit Mode Activation
     if (e.target.innerHTML === "Edit") {
         todoinput.value = e.target.previousElementSibling.innerHTML;
         todoinput.focus();
         addbtn.value = "Edit";
-        editTodo = e;
+        editTodo = e; // Store reference to edited item
     }
-    // Remover todo list
+    
+    // Delete Todo
     if (e.target.innerHTML === "Remove") {
-        tasklist.removeChild(e.target.parentElement)
-        deletetodo(e.target.parentElement)
+        tasklist.removeChild(e.target.parentElement);
+        deletetodo(e.target.parentElement);
     }
 }
 
-const savatodo = (todo) => {
-    let todos;
-    if (localStorage.getItem("todos") === null) {
-        todos = [];
-    } else {
-        todos = JSON.parse(localStorage.getItem("todos"))
-    }
-    todos.push(todo)
-    localStorage.setItem("todos", JSON.stringify(todos))
+// LocalStorage Operations
+
+// Save Todo to LocalStorage
+const savalocaltodo = (todo) => {
+    let todos = localStorage.getItem("todos") ? JSON.parse(localStorage.getItem("todos")): [];
+    todos.push(todo);
+    localStorage.setItem("todos", JSON.stringify(todos));
 }
 
-const gettodo = () => {
-    let todos;
-    if (localStorage.getItem("todos") === null) {
-        todos = [];
-    } else {
-        todos = JSON.parse(localStorage.getItem("todos"));
-        todos.forEach(todo => {
-            // Creating a li and p tag for HTML
-            const li = document.createElement("li")
-            const p = document.createElement("p")
+// Load Todos from LocalStorage
+const getlocaltodo = () => {
+    let todos = localStorage.getItem("todos") ? JSON.parse(localStorage.getItem("todos")) : [];
+    
+    todos.forEach(todo => {
+        // Recreate DOM elements for each stored todo
+        const li = document.createElement("li");
+        const p = document.createElement("p");
+        p.innerHTML = todo;
 
-            p.innerHTML = todo
-            li.appendChild(p)
-            tasklist.appendChild(li)
-            todoinput.value = ""
+        const editbtn = document.createElement("button");
+        editbtn.innerHTML = "Edit";
+        editbtn.classList.add("btn", "deletebtn");
 
-            // create a edit btn
-            const editbtn = document.createElement("button")
-            editbtn.innerHTML = "Edit"
-            editbtn.classList.add("btn", "deletebtn")
-            li.appendChild(editbtn);
+        const deletebtn = document.createElement("button");
+        deletebtn.innerHTML = "Remove";
+        deletebtn.classList.add("btn", "editbtn");
 
-            // create Delete btn 
-            const deletebtn = document.createElement("button")
-            deletebtn.innerHTML = "Remove"
-            deletebtn.classList.add("btn", "editbtn")
-            li.appendChild(deletebtn);
-            tasklist.appendChild(li)
-
-
-        });
-    }
+        li.appendChild(p);
+        li.appendChild(editbtn);
+        li.appendChild(deletebtn);
+        tasklist.appendChild(li);
+    });
 }
 
-const deletetodo = (todo) =>{
-    let todos;
-    if (localStorage.getItem("todos") === null) {
-        todos = [];
-    } else {
-        todos = JSON.parse(localStorage.getItem("todos"));
-    }
+// Delete Todo from LocalStorage
+const deletetodo = (todo) => {
+    let todos = JSON.parse(localStorage.getItem("todos"));
     let todotext = todo.children[0].innerHTML;
-    let todoindex = todos.indexOf(todotext);
-    todos.splice(todoindex , 1)
-    localStorage.setItem('todos' , JSON.stringify(todos))
-    console.log(todoindex)
+    todos.splice(todos.indexOf(todotext), 1);
+    localStorage.setItem("todos", JSON.stringify(todos));
 }
 
-const editlocaltodos = (todo) =>{
-    let todos = JSON.parse(localStorage.getItem("todos"))
-    let todoindex = todos.indexOf(todo)
+// Edit Todo in LocalStorage
+const editlocaltodos = (todo) => {
+    let todos = JSON.parse(localStorage.getItem("todos"));
+    let todoindex = todos.indexOf(todo);
     todos[todoindex] = todoinput.value;
-    localStorage.setItem('todos', JSON.stringify(todos))
+    localStorage.setItem("todos", JSON.stringify(todos));
 }
-// addEventListener to click button
-document.addEventListener('DOMContentLoaded' , gettodo)
-addbtn.addEventListener("click", addtodo);
-tasklist.addEventListener('click', updatetodo)
+
+// Event Listeners
+document.addEventListener("DOMContentLoaded", getlocaltodo); // Load todos on page load
+addbtn.addEventListener("click", addtodo); // Add/edit button handler
+tasklist.addEventListener("click", updatetodo); // Todo list interactions 
